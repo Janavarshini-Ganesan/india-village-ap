@@ -5,6 +5,7 @@ const helmet = require('helmet')
 const geographyRoutes = require('./routes/geography')
 const authRoutes = require('./routes/auth')
 const apiKeyRoutes = require('./routes/apikeys')
+const adminRoutes = require('./routes/admin')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -27,6 +28,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/v1', geographyRoutes)
 app.use('/api/keys', apiKeyRoutes)
+app.use('/api/admin', adminRoutes)
 
 // 404 handler
 app.use((req, res) => {
