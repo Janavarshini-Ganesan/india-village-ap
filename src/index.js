@@ -3,6 +3,8 @@ const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
 const geographyRoutes = require('./routes/geography')
+const authRoutes = require('./routes/auth')
+const apiKeyRoutes = require('./routes/apikeys')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -22,7 +24,9 @@ app.get('/', (req, res) => {
 })
 
 // Routes
+app.use('/api/auth', authRoutes)
 app.use('/api/v1', geographyRoutes)
+app.use('/api/keys', apiKeyRoutes)
 
 // 404 handler
 app.use((req, res) => {

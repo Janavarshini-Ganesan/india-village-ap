@@ -1,23 +1,21 @@
 const express = require('express')
 const router = express.Router()
 const prisma = require('../utils/prisma')
+const { requireApiKey } = require('../middleware/auth')
+const { rateLimit } = require('../middleware/rateLimit')
+
+// Apply API key auth + rate limiting to all routes
+router.use(requireApiKey)
+router.use(rateLimit)
 
 // GET /api/v1/states
 router.get('/states', async (req, res) => {
   try {
     const states = await prisma.state.findMany({
       orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        code: true,
-        name: true
-      }
+      select: { id: true, code: true, name: true }
     })
-    res.json({
-      success: true,
-      count: states.length,
-      data: states
-    })
+    res.json({ success: true, count: states.length, data: states })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
@@ -33,18 +31,9 @@ router.get('/districts', async (req, res) => {
     const districts = await prisma.district.findMany({
       where: { stateId: parseInt(stateId) },
       orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        stateId: true
-      }
+      select: { id: true, code: true, name: true, stateId: true }
     })
-    res.json({
-      success: true,
-      count: districts.length,
-      data: districts
-    })
+    res.json({ success: true, count: districts.length, data: districts })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
@@ -60,18 +49,9 @@ router.get('/subdistricts', async (req, res) => {
     const subdistricts = await prisma.subDistrict.findMany({
       where: { districtId: parseInt(districtId) },
       orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        districtId: true
-      }
+      select: { id: true, code: true, name: true, districtId: true }
     })
-    res.json({
-      success: true,
-      count: subdistricts.length,
-      data: subdistricts
-    })
+    res.json({ success: true, count: subdistricts.length, data: subdistricts })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
@@ -87,18 +67,9 @@ router.get('/villages', async (req, res) => {
     const villages = await prisma.village.findMany({
       where: { subDistrictId: parseInt(subDistrictId) },
       orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        subDistrictId: true
-      }
+      select: { id: true, code: true, name: true, subDistrictId: true }
     })
-    res.json({
-      success: true,
-      count: villages.length,
-      data: villages
-    })
+    res.json({ success: true, count: villages.length, data: villages })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
@@ -112,12 +83,7 @@ router.get('/villages/search', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Query must be at least 2 characters' })
     }
     const villages = await prisma.village.findMany({
-      where: {
-        name: {
-          contains: q,
-          mode: 'insensitive'
-        }
-      },
+      where: { name: { contains: q, mode: 'insensitive' } },
       take: 20,
       select: {
         id: true,
@@ -131,23 +97,14 @@ router.get('/villages/search', async (req, res) => {
               select: {
                 id: true,
                 name: true,
-                state: {
-                  select: {
-                    id: true,
-                    name: true
-                  }
-                }
+                state: { select: { id: true, name: true } }
               }
             }
           }
         }
       }
     })
-    res.json({
-      success: true,
-      count: villages.length,
-      data: villages
-    })
+    res.json({ success: true, count: villages.length, data: villages })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
@@ -181,13 +138,7 @@ router.get('/hierarchy', async (req, res) => {
                     id: true,
                     code: true,
                     name: true,
-                    country: {
-                      select: {
-                        id: true,
-                        name: true,
-                        code: true
-                      }
-                    }
+                    country: { select: { id: true, name: true, code: true } }
                   }
                 }
               }
@@ -199,17 +150,8 @@ router.get('/hierarchy', async (req, res) => {
     if (!village) {
       return res.status(404).json({ success: false, message: 'Village not found' })
     }
-
-    // Format standardized address
     const address = `${village.name}, ${village.subDistrict.name}, ${village.subDistrict.district.name}, ${village.subDistrict.district.state.name}, India`
-
-    res.json({
-      success: true,
-      data: {
-        village,
-        formattedAddress: address
-      }
-    })
+    res.json({ success: true, data: { village, formattedAddress: address } })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
