@@ -12,7 +12,14 @@ const PORT = process.env.PORT || 3000
 
 // Middleware
 app.use(helmet())
-app.use(cors())
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://india-village-api.vercel.app',
+    'https://india-village-ap.vercel.app'
+  ],
+  credentials: true
+}))
 app.use(express.json())
 
 // Health check
@@ -26,16 +33,15 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes)
-app.use('/api/v1', geographyRoutes)
 app.use('/api/keys', apiKeyRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/v1', geographyRoutes)
 
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' })
 })
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
