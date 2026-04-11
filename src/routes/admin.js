@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const prisma = require('../utils/prisma')
 const { requireAdmin } = require('../middleware/auth')
+const { sendApprovalEmail, sendSuspensionEmail } = require('../utils/email')
 
 // Apply admin auth to all routes
 router.use(requireAdmin)
@@ -129,6 +130,10 @@ router.patch('/users/:id/approve', async (req, res) => {
       where: { id: parseInt(req.params.id) },
       data: { isActive: true }
     })
+
+    // Send approval email
+    sendApprovalEmail(user.email, user.name)
+
     res.json({ success: true, message: `${user.name} approved successfully` })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
@@ -142,6 +147,9 @@ router.patch('/users/:id/suspend', async (req, res) => {
       where: { id: parseInt(req.params.id) },
       data: { isActive: false }
     })
+    // Send suspension email
+    sendSuspensionEmail(user.email, user.name)
+    
     res.json({ success: true, message: `${user.name} suspended successfully` })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })

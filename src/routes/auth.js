@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs')
 const prisma = require('../utils/prisma')
 const { generateToken } = require('../utils/jwt')
 const { requireAuth } = require('../middleware/auth')
+const { sendWelcomeEmail } = require('../utils/email')
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
@@ -33,6 +34,9 @@ router.post('/register', async (req, res) => {
         isActive: false // needs admin approval
       }
     })
+
+    // Send welcome email
+    sendWelcomeEmail(user.email, user.name)
 
     res.status(201).json({
       success: true,
