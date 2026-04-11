@@ -18,7 +18,7 @@ const sendWelcomeEmail = async (to, name) => {
         <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc; padding: 40px 20px;">
           <div style="background: #fff; borderRadius: 16px; padding: 40px; border: 1px solid #e2e8f0;">
             <div style="text-align: center; margin-bottom: 32px;">
-              <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; color: white; font-weight: 700;">IV</div>
+              <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; color: white; font-weight: 700;">IV</div>
               <h1 style="font-size: 24px; font-weight: 700; color: #1e1b4b; margin: 16px 0 8px;">India Village API</h1>
             </div>
             <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0 0 16px;">Hi ${name}, welcome! 👋</h2>
@@ -61,11 +61,47 @@ const sendApprovalEmail = async (to, name) => {
         <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc; padding: 40px 20px;">
           <div style="background: #fff; border-radius: 16px; padding: 40px; border: 1px solid #e2e8f0;">
             <div style="text-align: center; margin-bottom: 32px;">
-              <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; color: white; font-weight: 700;">IV</div>
-              <h1 style="font-size: 24px; font-weight: 700; color: #1e1b4b; margin: 16px 0 8px;">India Village API</h1>
+              <table align="center" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" valign="middle"
+                    style="
+                      width:56px;
+                      height:56px;
+                      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                      border-radius:16px;
+                      font-size:22px;
+                      color:white;
+                      font-weight:700;
+                      line-height:56px;   /* ✅ IMPORTANT */
+                      text-align:center;
+                    ">
+                    IV
+                  </td>
+                </tr>
+              </table>
+
+              <h1 style="font-size: 24px; font-weight: 700; color: #1e1b4b; margin: 16px 0 8px;">
+                India Village API
+              </h1>
             </div>
+
             <div style="text-align: center; margin-bottom: 24px;">
-              <div style="width: 64px; height: 64px; background: #dcfce7; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 28px;">✅</div>
+              <table align="center" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" valign="middle"
+                    style="
+                      width:64px;
+                      height:64px;
+                      background:#dcfce7;
+                      border-radius:50%;
+                      font-size:26px;
+                      line-height:56px;   /* ✅ IMPORTANT */
+                      text-align:center;
+                    ">
+                    ✓
+                  </td>
+                </tr>
+              </table>
             </div>
             <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0 0 16px; text-align: center;">You're approved, ${name}!</h2>
             <p style="color: #64748b; font-size: 15px; line-height: 1.7; margin: 0 0 24px; text-align: center;">
