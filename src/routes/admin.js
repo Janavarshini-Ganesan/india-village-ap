@@ -287,5 +287,50 @@ router.get('/geography/search', async (req, res) => {
   }
 })
 
+// GET /api/admin/logs
+router.get('/logs', async (req, res) => {
+  try {
+    const logs = await prisma.apiLog.findMany({
+      take: 100,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        apiKey: {
+          select: {
+            key: true,
+            user: {
+              select: { name: true, email: true }
+            }
+          }
+        }
+      }
+    })
+
+    const formatted = logs.map(log => ({
+      id: log.id,
+      endpoint: log.endpoint,
+      responseTime: log.responseTime,
+      statusCode: log.statusCode,
+      createdAt: log.createdAt,
+      apiKey: log.apiKey.key.substring(0, 6) + '****' + log.apiKey.key.substring(log.apiKey.key.length - 4),
+      user: log.apiKey.user.name,
+      email: log.apiKey.user.email
+    }))
+
+    // Summary stats
+    const total = logs.length
+    const success = logs.filter(l => l.statusCode >= 200 && l.statusCode < 300).length
+    const rateLimited = logs.filter(l => l.statusCode === 429).length
+    const errors = logs.filter(l => l.statusCode >= 400 && l.statusCode !== 429).length
+    const avgTime = logs.length > 0 ? Math.round(logs.reduce((a, b) => a + b.responseTime, 0) / logs.length) : 0
+
+    res.json({
+      success: true,
+      stats: { total, success, rateLimited, errors, avgTime },
+      data: formatted
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
 
 module.exports = router

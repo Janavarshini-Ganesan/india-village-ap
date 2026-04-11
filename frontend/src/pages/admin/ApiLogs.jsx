@@ -1,15 +1,10 @@
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
+import api from '../../utils/api'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-export default function AdminApiLogs() {
-  const navigate = useNavigate()
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    navigate('/login')
-  }
-
-  const Sidebar = () => (
-    <aside style={{ width: '240px', background: '#1e1b4b', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh' }}>
+const Sidebar = ({ handleLogout }) => (
+  <aside style={{ width: '240px', background: '#1e1b4b', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh' }}>
         {/* Logo */}
         <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -22,7 +17,7 @@ export default function AdminApiLogs() {
         <nav style={{ flex: 1, padding: '20px 12px' }}>
           <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '0 8px', marginBottom: '8px' }}>MAIN</p>
           {[
-            { icon: '▪️', label: 'Dashboard', path: '/admin' },
+            { icon: '▪️', label: 'Dashboard', path: '/admin'},
             { icon: '👥', label: 'Users', path: '/admin/users' },
             { icon: '🔑', label: 'API Keys', path: '/admin/keys' },
           ].map((item, i) => (
@@ -40,8 +35,8 @@ export default function AdminApiLogs() {
 
           <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '0 8px', margin: '20px 0 8px' }}>ANALYTICS</p>
           {[
-            { icon: '📈', label: 'API Logs', path: '/admin/logs' , active: true},
-            { icon: '🗺️', label: 'Geography', path: '/admin/geography' },
+            { icon: '📈', label: 'API Logs', path: '/admin/logs', active: true },
+            { icon: '🗺️', label: 'Geography', path: '/admin/geography'  },
           ].map((item, i) => (
             <Link key={i} to={item.path} style={{
               display: 'flex', alignItems: 'center', gap: '10px',
@@ -76,16 +71,28 @@ export default function AdminApiLogs() {
           </button>
         </div>
       </aside>
-  )
+)
 
-  const mockLogs = [
-    { id: 1, endpoint: '/api/v1/states', status: 200, time: '23ms', user: 'Test Business', key: 'ak_****abcd', date: '2026-04-11 10:23:01' },
-    { id: 2, endpoint: '/api/v1/villages/search?q=Chennai', status: 200, time: '45ms', user: 'Acme Corp', key: 'ak_****efgh', date: '2026-04-11 10:22:45' },
-    { id: 3, endpoint: '/api/v1/districts?stateId=1', status: 200, time: '31ms', user: 'Test Business', key: 'ak_****abcd', date: '2026-04-11 10:22:10' },
-    { id: 4, endpoint: '/api/v1/villages?subDistrictId=99', status: 404, time: '12ms', user: 'Shopline India', key: 'ak_****ijkl', date: '2026-04-11 10:21:55' },
-    { id: 5, endpoint: '/api/v1/hierarchy?villageId=1', status: 200, time: '67ms', user: 'LogiTrack', key: 'ak_****mnop', date: '2026-04-11 10:21:30' },
-    { id: 6, endpoint: '/api/v1/states', status: 429, time: '5ms', user: 'Zippy Pay', key: 'ak_****qrst', date: '2026-04-11 10:21:00' },
-  ]
+export default function AdminApiLogs() {
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    navigate('/login')
+  }
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['admin-logs'],
+    queryFn: async () => {
+      const res = await api.get('/admin/logs')
+      return res.data
+    },
+    refetchInterval: 30000 // auto refresh every 30 seconds
+  })
+
+  const logs = data?.data || []
+  const stats = data?.stats || {}
 
   const statusColor = (code) => {
     if (code >= 200 && code < 300) return { bg: '#dcfce7', color: '#166534' }
@@ -93,75 +100,124 @@ export default function AdminApiLogs() {
     return { bg: '#fee2e2', color: '#991b1b' }
   }
 
+  // Build chart data from logs (group by hour)
+  const chartData = logs.reduce((acc, log) => {
+    const hour = new Date(log.createdAt).getHours() + ':00'
+    const existing = acc.find(a => a.hour === hour)
+    if (existing) existing.requests++
+    else acc.push({ hour, requests: 1 })
+    return acc
+  }, []).slice(-12)
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: 'Inter, sans-serif' }}>
-      <Sidebar />
+      <Sidebar handleLogout={handleLogout} />
       <main style={{ marginLeft: '240px', flex: 1, padding: '32px' }}>
-        <div style={{ marginBottom: '28px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#1e1b4b', margin: 0 }}>API Logs</h1>
-          <p style={{ color: '#94a3b8', margin: '4px 0 0', fontSize: '14px' }}>Monitor API usage across all clients</p>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#1e1b4b', margin: 0 }}>API Logs</h1>
+            <p style={{ color: '#94a3b8', margin: '4px 0 0', fontSize: '14px' }}>Real-time API usage across all clients</p>
+          </div>
+          <button
+            onClick={() => refetch()}
+            style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
+          >
+            🔄 Refresh
+          </button>
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
           {[
-            { label: 'Total Requests', value: '12,480', bg: '#ede9fe', color: '#6d28d9' },
-            { label: 'Success (2xx)', value: '12,350', bg: '#dcfce7', color: '#166534' },
-            { label: 'Rate Limited', value: '98', bg: '#fef9c3', color: '#854d0e' },
-            { label: 'Errors (4xx/5xx)', value: '32', bg: '#fee2e2', color: '#991b1b' },
+            { label: 'Total Requests', value: stats.total || 0, bg: '#ede9fe', color: '#6d28d9' },
+            { label: 'Success (2xx)', value: stats.success || 0, bg: '#dcfce7', color: '#166534' },
+            { label: 'Rate Limited', value: stats.rateLimited || 0, bg: '#fef9c3', color: '#854d0e' },
+            { label: 'Errors (4xx/5xx)', value: stats.errors || 0, bg: '#fee2e2', color: '#991b1b' },
+            { label: 'Avg Response', value: `${stats.avgTime || 0}ms`, bg: '#e0f2fe', color: '#0369a1' },
           ].map((s, i) => (
             <div key={i} style={{ background: s.bg, borderRadius: '14px', padding: '18px' }}>
               <p style={{ fontSize: '12px', color: s.color, margin: '0 0 6px', fontWeight: 600 }}>{s.label}</p>
-              <p style={{ fontSize: '26px', fontWeight: 800, color: s.color, margin: 0 }}>{s.value}</p>
+              <p style={{ fontSize: '24px', fontWeight: 800, color: s.color, margin: 0 }}>{s.value}</p>
             </div>
           ))}
         </div>
+
+        {/* Chart */}
+        {chartData.length > 0 && (
+          <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #f1f5f9', marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Requests by Hour</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="hour" tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
+                <Line type="monotone" dataKey="requests" stroke="#6366f1" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
 
         {/* Logs Table */}
         <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
           <div style={{ padding: '16px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0 }}>Recent Requests</h3>
-            <span style={{ fontSize: '12px', color: '#94a3b8', background: '#f1f5f9', padding: '4px 12px', borderRadius: '20px' }}>Sample data — real logs coming soon</span>
+            <span style={{ fontSize: '12px', color: '#94a3b8' }}>Last 100 requests • Auto-refreshes every 30s</span>
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#f8fafc' }}>
-                {['Endpoint', 'Status', 'Time', 'User', 'API Key', 'Timestamp'].map(h => (
-                  <th key={h} style={{ padding: '12px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {mockLogs.map((log) => {
-                const s = statusColor(log.status)
-                return (
-                  <tr key={log.id} style={{ borderBottom: '1px solid #f8fafc' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '14px 20px' }}>
-                      <code style={{ fontSize: '12px', color: '#6366f1' }}>{log.endpoint}</code>
-                    </td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 700, padding: '3px 10px', borderRadius: '20px', background: s.bg, color: s.color }}>{log.status}</span>
-                    </td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <span style={{ fontSize: '13px', color: '#475569', fontWeight: 600 }}>{log.time}</span>
-                    </td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <span style={{ fontSize: '13px', color: '#1e293b' }}>{log.user}</span>
-                    </td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <code style={{ fontSize: '12px', color: '#94a3b8' }}>{log.key}</code>
-                    </td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <span style={{ fontSize: '12px', color: '#94a3b8' }}>{log.date}</span>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+
+          {isLoading ? (
+            <div style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>Loading logs...</div>
+          ) : logs.length === 0 ? (
+            <div style={{ padding: '60px', textAlign: 'center' }}>
+              <p style={{ fontSize: '32px', margin: '0 0 12px' }}>📭</p>
+              <p style={{ color: '#1e293b', fontWeight: 600, margin: '0 0 6px' }}>No logs yet</p>
+              <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}>Logs will appear when B2B users make API requests</p>
+            </div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#f8fafc' }}>
+                  {['Endpoint', 'Status', 'Time', 'User', 'API Key', 'Timestamp'].map(h => (
+                    <th key={h} style={{ padding: '12px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map((log) => {
+                  const s = statusColor(log.statusCode)
+                  return (
+                    <tr key={log.id} style={{ borderBottom: '1px solid #f8fafc' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <td style={{ padding: '14px 20px' }}>
+                        <code style={{ fontSize: '12px', color: '#6366f1' }}>{log.endpoint}</code>
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, padding: '3px 10px', borderRadius: '20px', background: s.bg, color: s.color }}>{log.statusCode}</span>
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span style={{ fontSize: '13px', color: log.responseTime > 100 ? '#f59e0b' : '#22c55e', fontWeight: 600 }}>{log.responseTime}ms</span>
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <p style={{ fontSize: '13px', color: '#1e293b', margin: 0, fontWeight: 500 }}>{log.user}</p>
+                        <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0 }}>{log.email}</p>
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <code style={{ fontSize: '12px', color: '#94a3b8' }}>{log.apiKey}</code>
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                          {new Date(log.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </main>
     </div>
