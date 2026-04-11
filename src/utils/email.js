@@ -98,7 +98,7 @@ const sendApprovalEmail = async (to, name) => {
                       line-height:56px;   /* ✅ IMPORTANT */
                       text-align:center;
                     ">
-                    ✓
+                    ✔️
                   </td>
                 </tr>
               </table>
