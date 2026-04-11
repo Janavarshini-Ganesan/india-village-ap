@@ -180,4 +180,112 @@ router.delete('/users/:id', async (req, res) => {
   }
 })
 
+
+// GET /api/admin/keys/all — Admin sees all keys
+router.get('/keys/all', async (req, res) => {
+  try {
+    const keys = await prisma.apiKey.findMany({
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, planType: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+    const maskedKeys = keys.map(k => ({
+      ...k,
+      key: k.key.substring(0, 6) + '****' + k.key.substring(k.key.length - 4),
+      secretHash: undefined
+    }))
+    res.json({ success: true, count: maskedKeys.length, data: maskedKeys })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// GET /api/admin/geography/states
+router.get('/geography/states', async (req, res) => {
+  try {
+    const states = await prisma.state.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, code: true, name: true }
+    })
+    res.json({ success: true, data: states })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// GET /api/admin/geography/districts?stateId=1
+router.get('/geography/districts', async (req, res) => {
+  try {
+    const { stateId } = req.query
+    const districts = await prisma.district.findMany({
+      where: { stateId: parseInt(stateId) },
+      orderBy: { name: 'asc' },
+      select: { id: true, code: true, name: true }
+    })
+    res.json({ success: true, data: districts })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// GET /api/admin/geography/subdistricts?districtId=1
+router.get('/geography/subdistricts', async (req, res) => {
+  try {
+    const { districtId } = req.query
+    const subdistricts = await prisma.subDistrict.findMany({
+      where: { districtId: parseInt(districtId) },
+      orderBy: { name: 'asc' },
+      select: { id: true, code: true, name: true }
+    })
+    res.json({ success: true, data: subdistricts })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// GET /api/admin/geography/villages?subDistrictId=1
+router.get('/geography/villages', async (req, res) => {
+  try {
+    const { subDistrictId } = req.query
+    const villages = await prisma.village.findMany({
+      where: { subDistrictId: parseInt(subDistrictId) },
+      orderBy: { name: 'asc' },
+      select: { id: true, code: true, name: true }
+    })
+    res.json({ success: true, data: villages })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// GET /api/admin/geography/search?q=Chennai
+router.get('/geography/search', async (req, res) => {
+  try {
+    const { q } = req.query
+    if (!q || q.length < 2) {
+      return res.status(400).json({ success: false, message: 'Query too short' })
+    }
+    const villages = await prisma.village.findMany({
+      where: { name: { contains: q, mode: 'insensitive' } },
+      take: 20,
+      select: {
+        id: true, code: true, name: true,
+        subDistrict: {
+          select: {
+            name: true,
+            district: { select: { name: true, state: { select: { name: true } } } }
+          }
+        }
+      }
+    })
+    res.json({ success: true, data: villages })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+
 module.exports = router
