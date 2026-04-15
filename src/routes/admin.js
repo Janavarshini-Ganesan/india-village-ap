@@ -338,4 +338,68 @@ router.get('/logs', async (req, res) => {
   }
 })
 
+// GET /api/admin/users/:id/states — get user state access
+router.get('/users/:id/states', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id)
+    const access = await prisma.userStateAccess.findMany({
+      where: { userId },
+      include: { state: { select: { id: true, name: true, code: true } } }
+    })
+    const allStates = await prisma.state.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, code: true }
+    })
+    res.json({
+      success: true,
+      data: {
+        granted: access.map(a => a.state),
+        all: allStates
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// POST /api/admin/users/:id/states — grant state access
+router.post('/users/:id/states', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id)
+    const { stateIds } = req.body // array of state IDs
+
+    // Delete existing access
+    await prisma.userStateAccess.deleteMany({ where: { userId } })
+
+    // Grant new access
+    if (stateIds && stateIds.length > 0) {
+      await prisma.userStateAccess.createMany({
+        data: stateIds.map(stateId => ({ userId, stateId }))
+      })
+    }
+
+    res.json({ success: true, message: 'State access updated successfully' })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// POST /api/admin/users/:id/states/all — grant all states
+router.post('/users/:id/states/all', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id)
+    const allStates = await prisma.state.findMany({ select: { id: true } })
+
+    await prisma.userStateAccess.deleteMany({ where: { userId } })
+    await prisma.userStateAccess.createMany({
+      data: allStates.map(s => ({ userId, stateId: s.id }))
+    })
+
+    res.json({ success: true, message: 'Full India access granted' })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+
 module.exports = router

@@ -13,6 +13,7 @@ import B2BDocs from './pages/b2b/Docs'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminSettings from './pages/admin/Settings'
 import Demo from './pages/Demo'
+import UserDetail from './pages/admin/UserDetail'
 
 // inside Routes add:
 const queryClient = new QueryClient()
@@ -37,6 +38,9 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute role="user"><B2BDashboard /></ProtectedRoute>} />
           <Route path="/dashboard/keys" element={<ProtectedRoute role="user"><B2BApiKeys /></ProtectedRoute>} />
           <Route path="/dashboard/docs" element={<ProtectedRoute role="user"><B2BDocs /></ProtectedRoute>} />
+
+          <Route path="/admin/users/:id" element={<ProtectedRoute role="admin"><UserDetail /></ProtectedRoute>} />
+
 
           <Route path="/demo" element={<Demo />} />
 

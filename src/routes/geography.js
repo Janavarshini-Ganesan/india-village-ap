@@ -157,4 +157,111 @@ router.get('/hierarchy', async (req, res) => {
   }
 })
 
+// GET /api/v1/autocomplete?q=Chennai&hierarchyLevel=village
+router.get('/autocomplete', async (req, res) => {
+  try {
+    const { q, hierarchyLevel = 'village' } = req.query
+
+    if (!q || q.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'INVALID_QUERY',
+        message: 'Query must be at least 2 characters'
+      })
+    }
+
+    let results = []
+
+    if (hierarchyLevel === 'village' || !hierarchyLevel) {
+      const villages = await prisma.village.findMany({
+        where: { name: { contains: q, mode: 'insensitive' } },
+        take: 10,
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          subDistrict: {
+            select: {
+              id: true,
+              name: true,
+              district: {
+                select: {
+                  id: true,
+                  name: true,
+                  state: { select: { id: true, name: true } }
+                }
+              }
+            }
+          }
+        }
+      })
+
+      results = villages.map(v => ({
+        value: `village_id_${v.code}`,
+        label: v.name,
+        fullAddress: `${v.name}, ${v.subDistrict.name}, ${v.subDistrict.district.name}, ${v.subDistrict.district.state.name}, India`,
+        hierarchy: {
+          village: v.name,
+          subDistrict: v.subDistrict.name,
+          district: v.subDistrict.district.name,
+          state: v.subDistrict.district.state.name,
+          country: 'India'
+        },
+        ids: {
+          villageId: v.id,
+          subDistrictId: v.subDistrict.id,
+          districtId: v.subDistrict.district.id,
+          stateId: v.subDistrict.district.state.id
+        }
+      }))
+    }
+
+    if (hierarchyLevel === 'state') {
+      const states = await prisma.state.findMany({
+        where: { name: { contains: q, mode: 'insensitive' } },
+        take: 10,
+        select: { id: true, code: true, name: true }
+      })
+      results = states.map(s => ({
+        value: `state_id_${s.code}`,
+        label: s.name,
+        fullAddress: `${s.name}, India`,
+        hierarchy: { state: s.name, country: 'India' },
+        ids: { stateId: s.id }
+      }))
+    }
+
+    if (hierarchyLevel === 'district') {
+      const districts = await prisma.district.findMany({
+        where: { name: { contains: q, mode: 'insensitive' } },
+        take: 10,
+        select: {
+          id: true, code: true, name: true,
+          state: { select: { id: true, name: true } }
+        }
+      })
+      results = districts.map(d => ({
+        value: `district_id_${d.code}`,
+        label: d.name,
+        fullAddress: `${d.name}, ${d.state.name}, India`,
+        hierarchy: { district: d.name, state: d.state.name, country: 'India' },
+        ids: { districtId: d.id, stateId: d.state.id }
+      }))
+    }
+
+    res.json({
+      success: true,
+      count: results.length,
+      data: results,
+      meta: {
+        query: q,
+        hierarchyLevel,
+        responseTime: Date.now()
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
 module.exports = router

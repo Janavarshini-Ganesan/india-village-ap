@@ -6,6 +6,8 @@ const geographyRoutes = require('./routes/geography')
 const authRoutes = require('./routes/auth')
 const apiKeyRoutes = require('./routes/apikeys')
 const adminRoutes = require('./routes/admin')
+const swaggerUi = require('swagger-ui-express')
+const swaggerSpec = require('./utils/swagger')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -29,6 +31,7 @@ app.get('/', (req, res) => {
     success: true,
     message: 'India Village API is running!',
     version: '1.0.0'
+    docs: '/api/docs'
   })
 })
 
@@ -45,6 +48,7 @@ app.use((req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
+  console.log(`Swagger docs: http://localhost:${PORT}/api/docs`)
 })
 
 module.exports = app

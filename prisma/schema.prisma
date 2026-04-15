@@ -16,15 +16,29 @@ model Country {
   states    State[]
 }
 
+model User {
+  id              Int               @id @default(autoincrement())
+  email           String            @unique
+  password        String
+  name            String
+  planType        String            @default("free")
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  apiKeys         ApiKey[]
+  stateAccess     UserStateAccess[]
+}
+
 model State {
-  id        Int        @id @default(autoincrement())
-  code      String     @unique
-  name      String
-  countryId Int
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  country   Country    @relation(fields: [countryId], references: [id])
-  districts District[]
+  id          Int               @id @default(autoincrement())
+  code        String            @unique
+  name        String
+  countryId   Int
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  country     Country           @relation(fields: [countryId], references: [id])
+  districts   District[]
+  userAccess  UserStateAccess[]
 }
 
 model District {
@@ -59,17 +73,7 @@ model Village {
   subDistrict   SubDistrict @relation(fields: [subDistrictId], references: [id])
 }
 
-model User {
-  id        Int        @id @default(autoincrement())
-  email     String     @unique
-  password  String
-  name      String
-  planType  String     @default("free")
-  isActive  Boolean    @default(true)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  apiKeys   ApiKey[]
-}
+
 
 model ApiKey {
   id         Int      @id @default(autoincrement())
@@ -92,4 +96,15 @@ model ApiLog {
   statusCode   Int
   createdAt    DateTime @default(now())
   apiKey       ApiKey   @relation(fields: [apiKeyId], references: [id])
+}
+
+model UserStateAccess {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  stateId   Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  state     State    @relation(fields: [stateId], references: [id])
+
+  @@unique([userId, stateId])
 }

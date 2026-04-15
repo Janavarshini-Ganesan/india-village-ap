@@ -208,6 +208,7 @@ export default function AdminUsers() {
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
                   {['User', 'Plan', 'Status', 'API Keys', 'Joined', 'Actions'].map(h => (
                     <th key={h} style={{ padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+
                   ))}
                 </tr>
               </thead>
@@ -223,6 +224,8 @@ export default function AdminUsers() {
                         <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: avatarColors[i % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '13px', flexShrink: 0 }}>
                           {getInitials(u.name)}
                         </div>
+                        // Add this to the user name cell — make it clickable
+<td style={{ padding: '16px 20px', cursor: 'pointer' }} onClick={() => navigate(`/admin/users/${u.id}`)}></td>
                         <div>
                           <p style={{ fontSize: '14px', fontWeight: 600, color: '#1e293b', margin: 0 }}>{u.name}</p>
                           <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>{u.email}</p>
