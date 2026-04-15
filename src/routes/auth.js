@@ -5,6 +5,7 @@ const prisma = require('../utils/prisma')
 const { generateToken } = require('../utils/jwt')
 const { requireAuth } = require('../middleware/auth')
 const { sendWelcomeEmail } = require('../utils/email')
+const { email, password, name, planType } = req.body
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
@@ -30,7 +31,7 @@ router.post('/register', async (req, res) => {
         email,
         password: hashedPassword,
         name,
-        planType: 'free',
+        planType: planType || 'free',
         isActive: false // needs admin approval
       }
     })
