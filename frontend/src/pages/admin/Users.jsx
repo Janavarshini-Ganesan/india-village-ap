@@ -219,14 +219,11 @@ export default function AdminUsers() {
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
                     {/* User */}
-                    // Add this to the user name cell — make it clickable
                     <td style={{ padding: '16px 20px', cursor: 'pointer' }} onClick={() => navigate(`/admin/users/${u.id}`)}>     
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: avatarColors[i % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '13px', flexShrink: 0 }}>
                           {getInitials(u.name)}
                         </div>
-                        // Add this to the user name cell — make it clickable
-<td style={{ padding: '16px 20px', cursor: 'pointer' }} onClick={() => navigate(`/admin/users/${u.id}`)}></td>
                         <div>
                           <p style={{ fontSize: '14px', fontWeight: 600, color: '#1e293b', margin: 0 }}>{u.name}</p>
                           <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>{u.email}</p>
