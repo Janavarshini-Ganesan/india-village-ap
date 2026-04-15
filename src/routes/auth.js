@@ -31,8 +31,8 @@ router.post('/register', async (req, res) => {
         email,
         password: hashedPassword,
         name,
-        planType: planType || 'free',
-        isActive: false // needs admin approval
+        planType: planType || 'free', // use selected plan
+        isActive: false
       }
     })
 
