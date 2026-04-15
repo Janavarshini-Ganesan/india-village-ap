@@ -5,12 +5,12 @@ const prisma = require('../utils/prisma')
 const { generateToken } = require('../utils/jwt')
 const { requireAuth } = require('../middleware/auth')
 const { sendWelcomeEmail } = require('../utils/email')
-const { email, password, name, planType } = req.body
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name } = req.body
+    const { email, password, name, planType } = req.body
+
 
     if (!email || !password || !name) {
       return res.status(400).json({ success: false, message: 'Email, password and name are required' })
