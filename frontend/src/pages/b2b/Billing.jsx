@@ -85,53 +85,39 @@ const PLANS = [
 
 const Sidebar = ({ handleLogout }) => (
   <aside style={{ width: '240px', background: '#0f172a', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh' }}>
-      <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>IV</div>
-          <div>
-            <p style={{ color: '#fff', fontWeight: 700, fontSize: '15px', margin: 0 }}>Village API</p>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', margin: 0 }}>Client Portal</p>
-          </div>
+    <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>IV</div>
+        <div>
+          <p style={{ color: '#fff', fontWeight: 700, fontSize: '15px', margin: 0 }}>Village API</p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', margin: 0 }}>Client Portal</p>
         </div>
       </div>
-      <nav style={{ flex: 1, padding: '20px 12px' }}>
-        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '0 8px', marginBottom: '8px' }}>MENU</p>
-        {[
-          { icon: '📊', label: 'Dashboard', path: '/dashboard' },
-          { icon: '🔑', label: 'API Keys', path: '/dashboard/keys' },
-          { icon: '📖', label: 'Docs', path: '/dashboard/docs' },
-          { icon: '💳', label: 'Billing & Plans', path: '/dashboard/billing', active: true },
-        ].map((item, i) => (
-          <Link key={i} to={item.path} style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            padding: '10px 12px', borderRadius: '10px', marginBottom: '2px',
-            background: item.active ? 'rgba(56,189,248,0.15)' : 'transparent',
-            color: item.active ? '#38bdf8' : 'rgba(255,255,255,0.55)',
-            textDecoration: 'none', fontSize: '14px', fontWeight: item.active ? 600 : 400,
-          }}>
-            <span>{item.icon}</span> {item.label}
-          </Link>
-        ))}
-      </nav>
-      <div style={{ padding: '16px 12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#0ea5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '12px' }}>
-            {profile?.name?.charAt(0).toUpperCase() || 'U'}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ color: '#fff', fontSize: '13px', fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.name || 'User'}</p>
-            <span style={{ fontSize: '10px', fontWeight: 600, padding: '1px 8px', borderRadius: '20px', background: badge.bg, color: badge.color }}>
-              {plan.charAt(0).toUpperCase() + plan.slice(1)}
-            </span>
-          </div>
-        </div>
-        <button onClick={handleLogout} style={{
-          display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
-          padding: '10px 12px', borderRadius: '10px', background: 'transparent',
-          color: 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', fontSize: '14px'
-        }}>↩ Logout</button>
-      </div>
-    </aside>
+    </div>
+    <nav style={{ flex: 1, padding: '20px 12px' }}>
+      <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '0 8px', marginBottom: '8px' }}>MENU</p>
+
+      {[
+        { icon: '📊', label: 'Dashboard', path: '/dashboard' },
+        { icon: '🔑', label: 'API Keys', path: '/dashboard/keys' },
+        { icon: '📖', label: 'Docs', path: '/dashboard/docs' },
+        { icon: '💳', label: 'Billing & Plans', path: '/dashboard/billing', active: true },
+      ].map((item, i) => (
+        <Link key={i} to={item.path} style={{
+          display: 'flex', alignItems: 'center', gap: '10px',
+          padding: '10px 12px', borderRadius: '10px', marginBottom: '2px',
+          background: item.active ? 'rgba(56,189,248,0.15)' : 'transparent',
+          color: item.active ? '#38bdf8' : 'rgba(255,255,255,0.55)',
+          textDecoration: 'none', fontSize: '14px', fontWeight: item.active ? 600 : 400,
+        }}>
+          <span>{item.icon}</span> {item.label}
+        </Link>
+      ))}
+    </nav>
+    <div style={{ padding: '16px 12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+      <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'transparent', color: 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', fontSize: '14px' }}>↩ Logout</button>
+    </div>
+  </aside>
 )
 
 export default function B2BBilling() {
