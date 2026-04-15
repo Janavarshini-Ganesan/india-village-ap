@@ -8,6 +8,7 @@ const geographyRoutes = require('./routes/geography')
 const authRoutes = require('./routes/auth')
 const apiKeyRoutes = require('./routes/apikeys')
 const adminRoutes = require('./routes/admin')
+const b2bRoutes = require('./routes/b2b')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -44,6 +45,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/keys', apiKeyRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/v1', geographyRoutes)
+app.use('/api/b2b', b2bRoutes)
 
 // 404 handler
 app.use((req, res) => {

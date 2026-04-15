@@ -85,6 +85,7 @@ print(response.json())`,
           { icon: '📊', label: 'Dashboard', path: '/dashboard' },
           { icon: '🔑', label: 'API Keys', path: '/dashboard/keys' },
           { icon: '📖', label: 'Docs', path: '/dashboard/docs' },
+          { icon: '💳', label: 'Billing & Plans', path: '/dashboard/billing' },
         ].map((item, i) => {
           const isActive = location.pathname === item.path;
           return (

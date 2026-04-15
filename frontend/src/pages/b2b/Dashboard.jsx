@@ -39,6 +39,17 @@ export default function B2BDashboard() {
     unlimited: { bg: '#fae8ff', color: '#7e22ce' }
   }
   const badge = planBadgeStyle[plan] || planBadgeStyle.free
+const { data: usage } = useQuery({
+  queryKey: ['b2b-usage'],
+  queryFn: async () => {
+    const res = await api.get('/b2b/usage')
+    return res.data.data
+  }
+})
+
+
+
+
 
   const Sidebar = () => (
     <aside style={{ width: '240px', background: '#0f172a', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh' }}>
@@ -57,6 +68,7 @@ export default function B2BDashboard() {
           { icon: '📊', label: 'Dashboard', path: '/dashboard', active: true },
           { icon: '🔑', label: 'API Keys', path: '/dashboard/keys' },
           { icon: '📖', label: 'Docs', path: '/dashboard/docs' },
+          { icon: '💳', label: 'Billing & Plans', path: '/dashboard/billing' },
         ].map((item, i) => (
           <Link key={i} to={item.path} style={{
             display: 'flex', alignItems: 'center', gap: '10px',
@@ -138,6 +150,33 @@ export default function B2BDashboard() {
             </div>
           ))}
         </div>
+
+        {/* Usage Bar */}
+        {usage && (
+          <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #e0f2fe', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0c1a2e', margin: 0 }}>Today's API Usage</h3>
+              <span style={{ fontSize: '13px', color: '#64748b' }}>{usage.today.used.toLocaleString()} / {usage.today.limit.toLocaleString()}</span>
+            </div>
+            <div style={{ height: '10px', background: '#e0f2fe', borderRadius: '99px', overflow: 'hidden', marginBottom: '8px' }}>
+              <div style={{ height: '100%', width: `${usage.today.percentage}%`, background: usage.today.percentage > 90 ? '#ef4444' : usage.today.percentage > 70 ? '#f59e0b' : '#0ea5e9', borderRadius: '99px', transition: 'width 0.5s' }}></div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '12px', color: usage.today.percentage > 90 ? '#ef4444' : '#64748b' }}>
+                {usage.today.percentage}% used
+              </span>
+              <span style={{ fontSize: '12px', color: '#0369a1', fontWeight: 600 }}>
+                {usage.today.remaining.toLocaleString()} remaining
+              </span>
+            </div>
+            {usage.today.percentage > 80 && (
+              <div style={{ marginTop: '12px', background: '#fef9c3', borderRadius: '10px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', color: '#854d0e', fontWeight: 500 }}>⚠️ Approaching daily limit</span>
+                <Link to="/dashboard/billing" style={{ fontSize: '12px', fontWeight: 700, color: '#854d0e', textDecoration: 'none', background: 'rgba(0,0,0,0.08)', padding: '4px 12px', borderRadius: '20px' }}>Upgrade Plan →</Link>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Quick Start Guide */}
         <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #e0f2fe', marginBottom: '24px' }}>
