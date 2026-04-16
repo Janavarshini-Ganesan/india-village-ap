@@ -2,11 +2,16 @@ import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 const API_BASE = 'https://india-village-ap.vercel.app/api'
-const DEMO_API_KEY = 'ak_ba01952c885b8c5770a84416b3565f69'
-
 const api = axios.create({
-  baseURL: API_BASE,
-  headers: { 'x-api-key': DEMO_API_KEY }
+  baseURL: API_BASE
+})
+
+api.interceptors.request.use((config) => {
+  const apiKey =
+    localStorage.getItem('apiKey') || 'ak_ad076ecf009c1574774aa1977b8e1957' // fallback
+
+  config.headers['x-api-key'] = apiKey
+  return config
 })
 
 export default function Demo() {

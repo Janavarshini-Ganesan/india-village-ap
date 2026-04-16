@@ -29,7 +29,12 @@ export default function B2BApiKeys() {
   const generateMutation = useMutation({
     mutationFn: (name) => api.post('/keys/generate', { name }),
     onSuccess: (res) => {
-      setGeneratedKey(res.data.data)
+      const keyData = res.data.data
+
+      // ✅ STORE USER API KEY HERE
+      localStorage.setItem('apiKey', keyData.key)
+
+      setGeneratedKey(keyData)
       setNewKeyName('')
       queryClient.invalidateQueries(['b2b-keys'])
     }
